@@ -13,13 +13,18 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $fields = $request->validate([
-            'email'     => 'required|string|unique:users,email',
-            'password'  => 'required|confirmed'
+            'email'     => 'required|string',
+            'password'  => ''
         ]);
 
         $user = User::where('email', $fields['email'])->first();
         
-        if(!user)
+        if(!$user || !Hash::check($fields['password'], $user->password))
+        {
+            return response([
+                'message' => 'Wrong credentials'
+            ],401);
+        }
 
         $token = $user->createToken('myapptoken')->plainTextToken;
         $response = [
@@ -29,6 +34,7 @@ class AuthController extends Controller
 
         return response($response, 201);
     }
+
     public function register(Request $request)
     {
         $fields = $request->validate([
